@@ -1,8 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import pickle
+import os
 
 app = Flask(__name__)
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Load models
 model_names = [
@@ -10,10 +13,10 @@ model_names = [
     'PolynomialRegression', 'SGDRegressor', 'ANN', 'RandomForest', 'SVM', 'LGBM', 
     'XGBoost', 'KNN'
 ]
-models = {name: pickle.load(open(f'{name}.pkl', 'rb')) for name in model_names}
+models = {name: pickle.load(open(os.path.join(BASE_DIR, f'{name}.pkl'), 'rb')) for name in model_names}
 
 # Load evaluation results
-results_df = pd.read_csv('model_evaluation_results.csv')
+results_df = pd.read_csv(os.path.join(BASE_DIR, 'model_evaluation_results.csv'))
 
 @app.route('/')
 def index():
@@ -43,6 +46,5 @@ def results():
     return render_template('model.html', tables=[results_df.to_html(classes='data')], titles=results_df.columns.values)
 
 if __name__ == '__main__':
-    app.run(debug=True)
-    
-    
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)S
